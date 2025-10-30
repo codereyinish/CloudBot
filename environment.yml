@@ -1,0 +1,14 @@
+name: chatbot_env
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - fastapi
+  - uvicorn
+  - mysql-connector-python
+  - python-dotenv
+  - pip:
+      - annotated-types==0.7.0
+      - pydantic==2.10.6
+      - starlette==0.44.0
