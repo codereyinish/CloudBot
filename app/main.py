@@ -3,8 +3,8 @@ from fastapi import FastAPI , Request #Request to validate type hint of JSON req
 from pydantic import BaseModel
 from typing import Any, Dict, List #for type hints
 from collections import Counter
-import generichelper
-import dbOperations
+from app import generichelper
+from app import dbOperations
 
 
 app = FastAPI()

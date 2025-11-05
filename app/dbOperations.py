@@ -6,7 +6,7 @@ import os
 
 load_dotenv()
 
-# Create the connection
+# Create the connection with CLOUDSQL
 cnx = mysql.connector.connect(
     user = os.getenv("DB_USER", "chatbot_user"),
     password = os.getenv("DB_PASS"),
