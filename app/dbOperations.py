@@ -4,6 +4,10 @@ global cnx
 from dotenv import load_dotenv
 import os
 
+
+
+#Load the secrets or environment variables from cloud into  .env file in  Python runtime process
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 load_dotenv()
 
 # Create the connection with CLOUDSQL
