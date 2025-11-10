@@ -1,3 +1,4 @@
+import os
 # IMPORT PACKAGES
 from fastapi import FastAPI , Request #Request to validate type hint of JSON request
 from pydantic import BaseModel
@@ -6,8 +7,44 @@ from collections import Counter
 from app import generichelper
 from app import dbOperations
 
+from google.cloud import dialogflow_v2 as dialogflow  #to authenticate the dialogflow API
 
 app = FastAPI()
+
+
+
+#GCP project_id
+PROJECT_ID = os.getenv("PROJECT_ID")
+
+
+@app.post("/chat")
+async def chat_with_bot(request : Request):
+    #read json from frontend
+    body = await request.json()
+    user_message = body.get("message", "")
+    session_id = body.get("session_id", "default")
+
+    #Create dialogflow session
+    session_client = dialogflow.SessionsClient()
+    session = session_client.session_path(PROJECT_ID, session_id) #link the session_id from frontend with dialogflow
+
+    #Create a TextInput Object and pass it to dialoglow  for intent detection
+    text_input = dialogflow.TextInput(text = user_message, language_code = "en")
+    #pass the query
+    query_input = dialogflow.QueryInput(text = text_input)
+
+    response = session_client.detect_intent(
+        request = {"session": session, "query_input": query_input}) #Sends DetectIntentRequest to Dialogflow and
+    # gets back DetectIntentResponse Class
+    return {"reply": response.query_result.fulfillment_Text}
+
+
+    #Retrieve intent or webhook response from dialogflwo
+
+
+
+
+
 
 
 in_progress_order = {}
