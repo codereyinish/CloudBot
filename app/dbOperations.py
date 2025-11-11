@@ -6,18 +6,18 @@ import os
 
 
 
-#Load the secrets or environment variables from cloud into  .env file in  Python runtime process
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 load_dotenv()
 
-# Create the connection with CLOUDSQL
-cnx = mysql.connector.connect(
-    user = os.getenv("DB_USER", "chatbot_user"),
-    password = os.getenv("DB_PASS"),
-    database = os.getenv("DB_NAME", "mb_eats"),
-    unix_socket = f"/cloudsql/{os.getenv('INSTANCE_CONNECTION_NAME')}"
+def get_cnx():
+    # Create the connection with CLOUDSQL
+    cnx = mysql.connector.connect(
+        user = os.getenv("DB_USER", "chatbot_user"),
+        password = os.getenv("DB_PASS"),
+        database = os.getenv("DB_NAME", "mb_eats"),
+        unix_socket = f"/cloudsql/{os.getenv('INSTANCE_CONNECTION_NAME')}"
 
-)
+    )
+    return cnx
 
 def safe_query(func):
     def wrapper(*args, **kwargs):
@@ -37,6 +37,7 @@ def safe_query(func):
 
 @safe_query
 def insert_order_item(next_order_id: int, food_item: int, quantity: int):
+    cnx = get_cnx()
     cursor = cnx.cursor()
 
     # Calling the stored procedure
@@ -54,6 +55,7 @@ def insert_order_item(next_order_id: int, food_item: int, quantity: int):
 
 @safe_query
 def get_next_order_id():
+    cnx = get_cnx()
     cursor = cnx.cursor()
 
     query = "Select max(order_id) from orders"
@@ -72,6 +74,7 @@ def get_next_order_id():
 
 @safe_query
 def get_total_order_price(order_id):
+    cnx = get_cnx()
     cursor = cnx.cursor()
 
     query = "Select Sum(total_price) from orders where order_id =%s"
@@ -87,6 +90,7 @@ def get_total_order_price(order_id):
 
 @safe_query
 def validateTrackID(track_id):
+    cnx = get_cnx()
     cursor = cnx.cursor()
     query = "Select * from order_tracking where order_id=%s"
     cursor.execute(query, (track_id,))
@@ -101,6 +105,7 @@ def validateTrackID(track_id):
 
 @safe_query
 def extract_saved_order_from_db(track_id):
+    cnx = get_cnx()
     cursor = cnx.cursor()
     query = """
         select m.name, o.quantity
