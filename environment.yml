@@ -7,6 +7,7 @@ dependencies:
   - fastapi
   - uvicorn
   - mysql-connector-python
+  - google-cloud-dialogflow
   - python-dotenv
   - pip:
       - annotated-types==0.7.0
