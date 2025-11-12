@@ -4,3 +4,4 @@ __pycache__/
 ../.readmeai.toml
 ../.zshrc
 ../md
+.env
