@@ -7,11 +7,21 @@ from collections import Counter
 from app import generichelper
 from app import dbOperations
 
-from google.cloud import dialogflow_v2 as dialogflow  #to authenticate the dialogflow API
+
+
+import  json
+from google.oauth2 import service_account
+from google.cloud import dialogflow_v2 as dialogflow
+
+creds_env = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+if creds_env and creds_env.strip().startswith("{"):
+    creds_info = json.loads(creds_env)
+    credentials = service_account.Credentials.from_service_account_info(creds_info)
+    session_client = dialogflow.SessionsClient(credentials=credentials)
+else:
+    session_client = dialogflow.SessionsClient()
 
 app = FastAPI()
-
-
 
 #GCP project_id
 PROJECT_ID = os.getenv("PROJECT_ID")
@@ -24,8 +34,6 @@ async def chat_with_bot(request : Request):
     user_message = body.get("message", "")
     session_id = body.get("session_id", "default")
 
-    #Create dialogflow session
-    session_client = dialogflow.SessionsClient()
     session = session_client.session_path(PROJECT_ID, session_id) #link the session_id from frontend with dialogflow
 
     #Create a TextInput Object and pass it to dialoglow  for intent detection
@@ -36,7 +44,7 @@ async def chat_with_bot(request : Request):
     response = session_client.detect_intent(
         request = {"session": session, "query_input": query_input}) #Sends DetectIntentRequest to Dialogflow and
     # gets back DetectIntentResponse Class
-    return {"reply": response.query_result.fulfillment_Text}
+    return {"reply": response.query_result.fulfillment_text}
 
 
     #Retrieve intent or webhook response from dialogflwo
