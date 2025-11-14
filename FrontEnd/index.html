@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoodChatbot 🍜</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      background: #f7f7f7;
+    }
+    h1 {
+      text-align: center;
+    }
+    #chat {
+      border: 1px solid #ddd;
+      padding: 10px;
+      height: 400px;
+      overflow-y: auto;
+      background: #fff;
+    }
+    .user {
+      color: blue;
+      margin: 4px 0;
+    }
+    .bot {
+      color: green;
+      margin: 4px 0;
+    }
+    input {
+      width: 80%;
+      padding: 10px;
+    }
+    button {
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>FoodChatbot 🍜</h1>
+  <div id="chat"></div>
+  <input id="msg" placeholder="Type your message..." />
+  <button onclick="send()">Send</button>
+  <button onclick="resetChat()">🧹 New Chat</button>
+
+  <script>
+    const API_URL = "https://mbeats-backend-1074333488803.us-central1.run.app/chat";
+
+    async function send() {
+      // 1️⃣ read user message from input box
+      const msg = document.getElementById("msg").value;
+
+      // 2️⃣ display the user's message on screen
+      const chatBox = document.getElementById("chat");
+      chatBox.innerHTML += `<p class="user">You: ${msg}</p>`;
+
+      // 3️⃣ send message to backend (HTTP POST)
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      });
+
+      // 4️⃣ wait for backend’s JSON reply
+      const data = await res.json();
+
+      // 5️⃣ show bot reply on screen
+      chatBox.innerHTML += `<p class="bot">Bot: ${data.reply}</p>`;
+
+      // 6️⃣ clear input box
+      document.getElementById("msg").value = "";
+    }
+
+    function resetChat() {
+        const chatBox = document.getElementById("chat");
+        chatBox.innerHTML = ""; // removes everything inside the chat box
+    }
+  </script>
+</body>
+</html>
