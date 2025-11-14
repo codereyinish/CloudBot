@@ -7,7 +7,14 @@ from collections import Counter
 from app import generichelper
 from app import dbOperations
 
-
+app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+app. add_middleware (
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 import  json
 from google.oauth2 import service_account
@@ -21,7 +28,7 @@ if creds_env and creds_env.strip().startswith("{"):
 else:
     session_client = dialogflow.SessionsClient()
 
-app = FastAPI()
+
 
 #GCP project_id
 PROJECT_ID = os.getenv("PROJECT_ID")
