@@ -11,3 +11,9 @@ deploy
 push
 read
 policy.json
+allow
+build
+deploy
+push
+read
+policy.json
