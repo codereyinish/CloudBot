@@ -30,3 +30,6 @@ steps:
 
 images:
   - "us-central1-docker.pkg.dev/khanabot/mbeats-backend/mbeats-backend:$SHORT_SHA"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
