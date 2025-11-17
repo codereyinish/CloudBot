@@ -1,0 +1,26 @@
+createTime: '2025-11-17T22:14:30.161981383Z'
+description: Build and deploy to Cloud Run service mbeats-backend on push to "^main$"
+filename: cloudbuild.yaml
+github:
+  name: CloudBot
+  owner: codereyinish
+  push:
+    branch: ^main$
+id: 5764edf0-3b9f-4e79-8575-8ae9ea3be788
+includeBuildLogs: INCLUDE_BUILD_LOGS_WITH_STATUS
+name: CloudBotTrigger
+resourceName: projects/khanabot/locations/us-central1/triggers/5764edf0-3b9f-4e79-8575-8ae9ea3be788
+serviceAccount: projects/khanabot/serviceAccounts/cloud-build-sa@khanabot.iam.gserviceaccount.com
+substitutions:
+  REPO_NAME: cloudbot
+  _AR_HOSTNAME: us-central1-docker.pkg.dev
+  _AR_PROJECT_ID: khanabot
+  _AR_REPOSITORY: mbeats-backend
+  _DEPLOY_REGION: us-central1
+  _PLATFORM: managed
+  _SERVICE_NAME: mbeats-backend
+  _TRIGGER_ID: ed7d1a59-19b6-41be-8355-e8dbfdb7c63e
+tags:
+- gcp-cloud-build-deploy-cloud-run
+- gcp-cloud-build-deploy-cloud-run-managed
+- mbeats-backend
