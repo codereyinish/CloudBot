@@ -48,20 +48,22 @@
 
   <script>
     const API_URL = "https://mbeats-backend-1074333488803.us-central1.run.app/chat";
+    //Create session_id for a chat
+    let session_id = Date.now().toString();  // New session for this chat
 
     async function send() {
       // 1️⃣ read user message from input box
       const msg = document.getElementById("msg").value;
 
-      // 2️⃣ display the user's message on screen1
+      // 2️⃣ display the user's message inside chatbox
       const chatBox = document.getElementById("chat");
       chatBox.innerHTML += `<p class="user">You: ${msg}</p>`;
 
-      // 3️⃣ send message to backend (HTTP POST)
+      // 3️⃣ send message to backend (HTTP POST) at /chat
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
+        body: JSON.stringify({ message: msg, session_id: session_id })
       });
 
       // 4️⃣ wait for backend’s JSON reply
@@ -70,13 +72,15 @@
       // 5️⃣ show bot reply on screen
       chatBox.innerHTML += `<p class="bot">Bot: ${data.reply}</p>`;
 
-      // 6️⃣ clear input box
+      // 6️⃣ clear input box for new message to write
       document.getElementById("msg").value = "";
     }
 
     function resetChat() {
         const chatBox = document.getElementById("chat");
         chatBox.innerHTML = ""; // removes everything inside the chat box
+        session_id = Date.now().toString(); //start new conversation
+
     }
   </script>
 </body>

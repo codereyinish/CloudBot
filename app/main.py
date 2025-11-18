@@ -34,6 +34,7 @@ else:
 
 #GCP project_id
 PROJECT_ID = os.getenv("PROJECT_ID")
+print(PROJECT_ID)
 
 
 @app.post("/chat")
@@ -46,7 +47,7 @@ async def chat_with_bot(request : Request):
     session = session_client.session_path(PROJECT_ID, session_id) #link the session_id from frontend with dialogflow
 
     #Create a TextInput Object and pass it to dialoglow  for intent detection
-    text_input = dialogflow.TextInput(text = user_message, language_code = "en")
+    text_input = dialogflow.TextInput(text = user_message, language_code = "en-US")
     #pass the query
     query_input = dialogflow.QueryInput(text = text_input)
 
@@ -262,7 +263,7 @@ def root():
     return {"message": "FoodChatbot  is running 🚀"}
 #Main WEBHOOK HANDLER
 
-@app.post("/")
+@app.post("/webhook")
 async def handle_request(request: Request):
     req_json = await request.json()
 
