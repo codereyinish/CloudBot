@@ -72,40 +72,53 @@ async def chat_with_bot(request: Request):
 in_progress_order = {}
 
 
-def handle_order_add(parameters:Dict[str, Any], session_id:str, query_text:str) -> Dict[str, Any]:
-    item =  parameters.get("food_items", [])
-    quantities = parameters.get("quantity",[])
+def handle_order_add(parameters: Dict[str, Any], session_id: str, query_text: str) -> Dict[str, Any]:
+    t0 = time.time()
+    print(f"  ⏱️ [0.000s] handle_order_add started")
 
-    #Normalize both variables to remove "" for invalid item and quantity
+    item = parameters.get("food_items", [])
+    quantities = parameters.get("quantity", [])
+    print(f"  ⏱️ [{time.time() - t0:.3f}s] Got parameters: item={item}, qty={quantities}")
+
+    # Normalize both variables to remove "" for invalid item and quantity
     item, quantities = generichelper.NormalizeVariable(item, quantities)
+    print(f"  ⏱️ [{time.time() - t0:.3f}s] Normalized variables")
 
-    if len(item)==0:
-        return{
+    if len(item) == 0:
+        print(f"  ⏱️ [{time.time() - t0:.3f}s] No items, returning early")
+        return {
             "fulfillmentText": "Which item you want to add?"
         }
 
+    if len(item) != len(quantities):
+        print(f"  ⏱️ [{time.time() - t0:.3f}s] Length mismatch, returning early")
+        return {
+            "fulfillmentText": "Sorry I didn't understand. Can you please specify the food items and quantity properly "}
 
-    if len(item)!= len(quantities):
-        return{
-        "fulfillmentText" : "Sorry I didn't understand. Can you please specify the food items and quantity properly "}
-
-    #later try to add multiple items together , 1 lassi and 2 momo
+    # later try to add multiple items together , 1 lassi and 2 momo
     else:
-       new_food_dictionary = dict(zip(item, quantities))
-    if session_id in in_progress_order: #USE EXISTING SESSION
-        #Check if user is trying to make an update or add more
+        new_food_dictionary = dict(zip(item, quantities))
+    print(f"  ⏱️ [{time.time() - t0:.3f}s] Created food dictionary: {new_food_dictionary}")
+
+    if session_id in in_progress_order:  # USE EXISTING SESSION
+        # Check if user is trying to make an update or add more
         update_keywords = ["change", "instead", "make", "replace", "no", "not", "update", "only"]
         if any(word in query_text for word in update_keywords):
-            #REPLACEMENT
+            # REPLACEMENT
             in_progress_order[session_id].update(new_food_dictionary)
         else:
-            #INCREMENT
-            in_progress_order[session_id] = dict(Counter(in_progress_order.get(session_id, {})) + Counter(new_food_dictionary))  # use Counter when we want to comnbine multiple key's values together
-    else: #NEW SESSION_ID WILL BE CREATED BY PYTHON DICT
-        in_progress_order[session_id]= new_food_dictionary
-    return generichelper.ReturnFulfillmentMessage(in_progress_order[session_id])
+            # INCREMENT
+            in_progress_order[session_id] = dict(
+                Counter(in_progress_order.get(session_id, {})) + Counter(new_food_dictionary))
+    else:  # NEW SESSION_ID WILL BE CREATED BY PYTHON DICT
+        in_progress_order[session_id] = new_food_dictionary
 
+    print(f"  ⏱️ [{time.time() - t0:.3f}s] Updated in_progress_order")
 
+    result = generichelper.ReturnFulfillmentMessage(in_progress_order[session_id])
+    print(f"  ⏱️ [{time.time() - t0:.3f}s] Generated fulfillment message, returning")
+
+    return result
 
 
 def handle_order_remove(parameters: Dict[str, Any], session_id:str, query_text:str, all_params_present:bool)-> Dict[
@@ -267,52 +280,59 @@ def root():
     return {"message": "FoodChatbot  is running 🚀"}
 #Main WEBHOOK HANDLER
 
+# Main WEBHOOK HANDLER
 @app.post("/webhook")
 async def handle_request(request: Request):
-    req_json = await request.json()
+    t0 = time.time()
+    print(f"🔧 [0.000s] ========== WEBHOOK STARTED ==========")
 
-#EXTRACTION
+    try:
+        t1 = time.time()
+        req_json = await request.json()
+        print(f"🔧 [{time.time() - t0:.3f}s] JSON parsed (took {time.time() - t1:.3f}s)")
 
-    intent = req_json.get("queryResult", {}).get("intent", {}).get("displayName")
-    parameters = req_json.get("queryResult", {}).get("parameters", {})
-    query_text = req_json.get("queryResult", {}).get("queryText", "")
-    all_params_present = req_json.get("queryResult", {}).get("allRequiredParamsPresent", False)
+        # EXTRACTION
+        t1 = time.time()
+        intent = req_json.get("queryResult", {}).get("intent", {}).get("displayName")
+        parameters = req_json.get("queryResult", {}).get("parameters", {})
+        query_text = req_json.get("queryResult", {}).get("queryText", "")
+        all_params_present = req_json.get("queryResult", {}).get("allRequiredParamsPresent", False)
+        session_path = req_json.get("session", "")
+        session_id = session_path.split("/sessions/")[-1]
+        print(f"🔧 [{time.time() - t0:.3f}s] Extracted data (took {time.time() - t1:.3f}s) - Intent: '{intent}'")
 
-    session_path = req_json.get("session", "")
-    session_id = session_path.split("/sessions/")[-1]
+        t1 = time.time()
+        print(f"🔧 [{time.time() - t0:.3f}s] About to call handler for intent: '{intent}'")
 
-    intent_handle_dict = {
-    "Order.Add-context:ongoing-order" : handle_order_add,
-    "Order.remove-context:ongoing-order": handle_order_remove,
-    "Order.reset-context:ongoing-order": handle_order_reset,
-    "order.track-context:ongoing-order" : handle_order_track,
-    "Order.complete-context:ongoing_order": handle_order_complete,
-    "Order.display-context:ongoing-order": handle_order_display,
-    "Order.display_tracked_items": handle_tracked_order_display
-    }
-    if intent == "Order.Add-context:ongoing-order":
-        return intent_handle_dict[intent](parameters, session_id, query_text)
-    elif intent == "Order.remove-context:ongoing-order":
-        return intent_handle_dict[intent](parameters, session_id, query_text, all_params_present)
-    elif intent == "Order.reset-context:ongoing-order":
-        return intent_handle_dict[intent](session_id)
-    elif intent == "order.track-context:ongoing-order":
-        return intent_handle_dict[intent](parameters)
-    elif intent ==  "Order.display-context:ongoing-order":
-        return intent_handle_dict[intent](session_id)
-    elif intent == "Order.display_tracked_items":
-        return intent_handle_dict[intent](req_json)
-    else:
-        return intent_handle_dict[intent](parameters, session_id)
+        # Call the appropriate handler based on intent
+        if intent == "Order.Add-context:ongoing-order":
+            result = handle_order_add(parameters, session_id, query_text)
+        elif intent == "Order.remove-context:ongoing-order":
+            result = handle_order_remove(parameters, session_id, query_text, all_params_present)
+        elif intent == "Order.reset-context:ongoing-order":
+            result = handle_order_reset(session_id)
+        elif intent == "order.track-context:ongoing-order":
+            result = handle_order_track(parameters)
+        elif intent == "Order.display-context:ongoing-order":
+            result = handle_order_display(session_id)
+        elif intent == "Order.display_tracked_items":
+            result = handle_tracked_order_display(req_json)
+        elif intent == "Order.complete-context:ongoing_order":
+            result = handle_order_complete(parameters, session_id)
+        else:
+            print(f"🔧 [{time.time() - t0:.3f}s] ⚠️ Unknown intent: '{intent}'")
+            result = {"fulfillmentText": "Sorry, I didn't understand that."}
 
+        print(f"🔧 [{time.time() - t0:.3f}s] Handler completed (took {time.time() - t1:.3f}s)")
+        print(f"🔧 [{time.time() - t0:.3f}s] ========== WEBHOOK FINISHED (TOTAL: {time.time() - t0:.3f}s) ==========")
 
+        return result
 
-
-
-
-
-
-
+    except Exception as e:
+        print(f"❌ [{time.time() - t0:.3f}s] WEBHOOK ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"fulfillmentText": "Sorry, something went wrong."}
 
 
 
