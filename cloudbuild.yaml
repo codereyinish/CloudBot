@@ -43,9 +43,7 @@ options:
   diskSizeGb: 200
   logging: CLOUD_LOGGING_ONLY
 
-  # cache Docker layers
-env:
-  - DOCKER_BUILDKIT=1
+
 
 
 
