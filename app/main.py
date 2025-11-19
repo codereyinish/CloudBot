@@ -36,29 +36,33 @@ else:
 PROJECT_ID = os.getenv("PROJECT_ID")
 print(PROJECT_ID)
 
+import time
+
 
 @app.post("/chat")
-async def chat_with_bot(request : Request):
-    #read json from frontend
+async def chat_with_bot(request: Request):
+    start = time.time()
+
     body = await request.json()
     user_message = body.get("message", "")
     session_id = body.get("session_id", "default")
 
-    session = session_client.session_path(PROJECT_ID, session_id) #link the session_id from frontend with dialogflow
+    print(f"🟢 [{time.time() - start:.3f}s] /chat received: '{user_message}'")
 
-    #Create a TextInput Object and pass it to dialoglow  for intent detection
-    text_input = dialogflow.TextInput(text = user_message, language_code = "en-US")
-    #pass the query
-    query_input = dialogflow.QueryInput(text = text_input)
+    session = session_client.session_path(PROJECT_ID, session_id)
+    text_input = dialogflow.TextInput(text=user_message, language_code="en-US")
+    query_input = dialogflow.QueryInput(text=text_input)
+
+    print(f"🔵 [{time.time() - start:.3f}s] Calling Dialogflow detect_intent...")
 
     response = session_client.detect_intent(
-        request = {"session": session, "query_input": query_input}) #Sends DetectIntentRequest to Dialogflow and
-    # gets back DetectIntentResponse Class
+        request={"session": session, "query_input": query_input}
+    )
+
+    print(f"🟢 [{time.time() - start:.3f}s] Dialogflow responded")
+    print(f"📤 [{time.time() - start:.3f}s] Sending to browser")
+
     return {"reply": response.query_result.fulfillment_text}
-
-
-    #Retrieve intent or webhook response from dialogflwo
-
 
 
 
