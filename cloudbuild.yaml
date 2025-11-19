@@ -44,8 +44,8 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
   # cache Docker layers
-  env:
-    - DOCKER_BUILDKIT=1
+env:
+  - DOCKER_BUILDKIT=1
 
 cache:
   paths:
