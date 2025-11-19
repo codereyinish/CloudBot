@@ -25,25 +25,15 @@ steps:
       '--platform', '$_PLATFORM',
       '--allow-unauthenticated',
 
-      # Cloud SQL attachment
       '--add-cloudsql-instances', 'khanabot:us-central1:mbbeats-mysql',
 
-      # 🔥 Secrets injected at runtime
-      '--set-secrets=
-           dialogflow-key=dialogflow-key:latest,
-           DB_USER=db-user:latest,
-           DB_PASS=db-pass:latest
-       '
+      # Secrets (must be ONE LINE)
+      '--set-secrets=dialogflow-key=dialogflow-key:latest,DB_USER=db-user:latest,DB_PASS=db-pass:latest',
 
-
-      # 🔥 Safe env vars
-      '--set-env-vars=
-           PROJECT_ID=khanabot,
-           DB_NAME=mb_eats,
-           INSTANCE_CONNECTION_NAME=khanabot:us-central1:mbbeats-mysql,
-           GOOGLE_APPLICATION_CREDENTIALS=/secrets/dialogflow-key.json
-       '
+      # Env vars (must be ONE LINE)
+      '--set-env-vars=PROJECT_ID=khanabot,DB_NAME=mb_eats,INSTANCE_CONNECTION_NAME=khanabot:us-central1:mbbeats-mysql,GOOGLE_APPLICATION_CREDENTIALS=/secrets/dialogflow-key.json'
     ]
+
 
 images:
   - '$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA'
