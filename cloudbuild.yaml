@@ -31,7 +31,7 @@ steps:
       '--set-secrets=dialogflow-key=dialogflow-key:latest,DB_USER=db-user:latest,DB_PASS=db-pass:latest',
 
       # Env vars (must be ONE LINE)
-      '--set-env-vars=PROJECT_ID=khanabot,DB_NAME=mb_eats,INSTANCE_CONNECTION_NAME=khanabot:us-central1:mbbeats-mysql,GOOGLE_APPLICATION_CREDENTIALS=/secrets/dialogflow-key.json'
+      '--set-env-vars=PROJECT_ID=khanabot,DB_NAME=mb_eats,INSTANCE_CONNECTION_NAME=khanabot:us-central1:mbbeats-mysql'
     ]
 
 
@@ -39,4 +39,17 @@ images:
   - '$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA'
 
 options:
+  machineType: 'E2_HIGHCPU_8'
+  diskSizeGb: 200
   logging: CLOUD_LOGGING_ONLY
+
+  # cache Docker layers
+  env:
+    - DOCKER_BUILDKIT=1
+
+cache:
+  paths:
+    - /workspace/.docker
+
+
+
